@@ -1,0 +1,12 @@
+notebook
+ipywidgets
+tqdm
+python-dotenv
+openai
+flask
+rembg
+onnxruntime
+pillow
+torch
+transformers
+requests
