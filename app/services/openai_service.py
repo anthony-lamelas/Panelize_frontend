@@ -24,7 +24,7 @@ def generate_panels(story_description: str, num_panels: int):
 
     user_msg = f"Break this story into {num_panels} prompts:\n\n{story_description}"
 
-    gpt_response = openai.ChatCompletion.create(
+    gpt_response = openai.chat.completions.create(  # CHANGED FOR NEW OPENAI SYNTAX
         model="gpt-4o",
         messages=[
             {"role": "system", "content": system_msg},
@@ -54,20 +54,18 @@ def generate_panels(story_description: str, num_panels: int):
                 f"of the previous image as you are telling a story: {previous_caption}. {panel_prompt}"
             )
     
-        # For each prompt, call DALLE
-        image_response = openai.Image.create(
+        image_response = openai.images.generate(  # CHANGED FOR NEW OPENAI SYNTAX
             prompt=used_prompt,
             n=1,
             size="1024x1024",
             model="dall-e-3"  
         )
 
-        if not image_response["data"]:
+        if not image_response.data:  # CHANGED FOR NEW OPENAI SYNTAX
             results.append({"prompt": used_prompt, "image_url": None, "caption": None})
             continue
 
-        # Extract image URL
-        image_url = image_response["data"][0]["url"]
+        image_url = image_response.data[0].url  # CHANGED FOR NEW OPENAI SYNTAX
 
         # Caption using BLIP
         image_bytes = requests.get(image_url).content
@@ -116,16 +114,16 @@ def caption_image(image_bytes: bytes) -> str:
     # Preprocess & generate
     inputs = processor(img, return_tensors="pt").to(device)
     with torch.no_grad():
-        output_ids =model.generate(
-        **inputs,
-        max_length=300,      # longer generation
-        num_beams=7,         # better quality
-        do_sample=True,      # randomness for richness
-        top_k=100,            # randomness control
-        top_p=0.95,          # nucleus sampling for variety
-        temperature=1.2,     # higher temperature for creativity
-        early_stopping=False # full length generation
-)
+        output_ids = model.generate(
+            **inputs,
+            max_length=300,
+            num_beams=7,
+            do_sample=True,
+            top_k=100,
+            top_p=0.95,
+            temperature=1.2,
+            early_stopping=False
+        )
 
     # Decode the output tokens to text
     caption = processor.decode(output_ids[0], skip_special_tokens=True)
