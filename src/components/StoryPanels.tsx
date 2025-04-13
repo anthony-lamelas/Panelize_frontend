@@ -15,7 +15,7 @@ const StoryPanels: React.FC<StoryPanelsProps> = ({ panels }) => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {panels.map((panel) => (
           <Card key={panel.id} className="overflow-hidden border-none shadow-lg">
-            <div className="aspect-[4/3] bg-panelize-light-purple relative overflow-hidden">
+            <div className="aspect-[4/3] bg-panelize-light-blue relative overflow-hidden">
               <img 
                 src={panel.imageBase64} 
                 alt={panel.description}

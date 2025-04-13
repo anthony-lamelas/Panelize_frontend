@@ -64,10 +64,10 @@ export default {
 					ring: 'hsl(var(--sidebar-ring))'
 				},
 				panelize: {
-					purple: '#9b87f5',
-					'dark-purple': '#6E59A5',
-					'light-purple': '#E5DEFF',
-					'soft-gray': '#F1F0FB',
+					blue: '#0EA5E9',
+					'dark-blue': '#1A1F2C',
+					'light-blue': '#E5F6FF',
+					'soft-gray': '#F1F5FA',
 				}
 			},
 			borderRadius: {

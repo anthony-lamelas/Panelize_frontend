@@ -2,8 +2,8 @@
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Slider } from "@/components/ui/slider";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 import { Loader2 } from "lucide-react";
 
 interface StoryFormProps {
@@ -19,6 +19,13 @@ const StoryForm: React.FC<StoryFormProps> = ({ onSubmit, isLoading }) => {
     e.preventDefault();
     if (description.trim()) {
       onSubmit(description, panelCount);
+    }
+  };
+
+  const handlePanelCountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = parseInt(e.target.value);
+    if (!isNaN(value) && value >= 1 && value <= 10) {
+      setPanelCount(value);
     }
   };
 
@@ -40,33 +47,23 @@ const StoryForm: React.FC<StoryFormProps> = ({ onSubmit, isLoading }) => {
         </div>
 
         <div className="mb-8">
-          <div className="flex justify-between items-center mb-2">
-            <label htmlFor="panelCount" className="block text-sm font-medium text-gray-700">
-              Number of Panels
-            </label>
-            <span className="text-sm font-medium bg-panelize-light-purple text-panelize-dark-purple px-2 py-1 rounded-full">
-              {panelCount} {panelCount === 1 ? 'panel' : 'panels'}
-            </span>
-          </div>
-          <Slider
+          <label htmlFor="panelCount" className="block text-sm font-medium text-gray-700 mb-2">
+            Number of Panels (1-10)
+          </label>
+          <Input
             id="panelCount"
+            type="number"
             min={1}
             max={10}
-            step={1}
-            value={[panelCount]}
-            onValueChange={(values) => setPanelCount(values[0])}
-            className="py-4"
+            value={panelCount}
+            onChange={handlePanelCountChange}
+            className="w-full"
           />
-          <div className="flex justify-between text-xs text-gray-500 px-2">
-            <span>1</span>
-            <span>5</span>
-            <span>10</span>
-          </div>
         </div>
 
         <Button 
           type="submit" 
-          className="w-full bg-gradient-to-r from-panelize-dark-purple to-panelize-purple hover:opacity-90 transition-opacity"
+          className="w-full bg-gradient-to-r from-panelize-dark-blue to-panelize-blue hover:opacity-90 transition-opacity"
           disabled={isLoading || !description.trim()}
         >
           {isLoading ? (
