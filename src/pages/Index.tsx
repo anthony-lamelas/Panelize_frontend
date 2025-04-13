@@ -18,11 +18,12 @@ const Index = () => {
       // In a real application, this would be an API call to your backend
       // For demo purposes, we'll simulate a response after a delay
       setTimeout(() => {
-        // Mock response data
+        // Mock response data - in a real app, the description would come from the backend
+        // The backend would process the user's description using GPT to create panel-specific descriptions
         const mockPanels: Panel[] = Array.from({ length: panelCount }, (_, i) => ({
           id: `panel-${i}`,
           imageBase64: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjRTVERUZGIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIyNCIgZmlsbD0iIzZFNTlBNSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZG9taW5hbnQtYmFzZWxpbmU9Im1pZGRsZSI+UGFuZWwgJHtpKzF9PC90ZXh0Pjwvc3ZnPg==',
-          description: `Panel ${i+1} (${style}): ${description.substring(0, 25)}${description.length > 25 ? '...' : ''}`
+          description: `Panel ${i+1} (${style}): This is where the backend-generated description for this specific panel would appear. It would be a part of the story broken down by GPT.`
         }));
         
         setPanels(mockPanels);

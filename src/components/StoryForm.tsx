@@ -29,7 +29,7 @@ const StoryForm: React.FC<StoryFormProps> = ({ onSubmit, isLoading }) => {
 
   const handlePanelCountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseInt(e.target.value);
-    if (!isNaN(value) && value >= 1 && value <= 10) {
+    if (!isNaN(value) && value >= 1) {
       setPanelCount(value);
     }
   };
@@ -53,13 +53,12 @@ const StoryForm: React.FC<StoryFormProps> = ({ onSubmit, isLoading }) => {
 
         <div className="mb-6">
           <label htmlFor="panelCount" className="block text-sm font-medium text-gray-700 mb-2">
-            Number of Panels (1-10)
+            Number of Panels
           </label>
           <Input
             id="panelCount"
             type="number"
             min={1}
-            max={10}
             value={panelCount}
             onChange={handlePanelCountChange}
             className="w-full"
