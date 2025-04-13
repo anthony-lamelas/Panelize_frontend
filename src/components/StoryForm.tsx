@@ -5,20 +5,25 @@ import { Card } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Loader2 } from "lucide-react";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
 
 interface StoryFormProps {
-  onSubmit: (description: string, panelCount: number) => void;
+  onSubmit: (description: string, panelCount: number, style: string) => void;
   isLoading: boolean;
 }
 
 const StoryForm: React.FC<StoryFormProps> = ({ onSubmit, isLoading }) => {
   const [description, setDescription] = useState('');
   const [panelCount, setPanelCount] = useState(3);
+  const [style, setStyle] = useState('comic book');
+  const [customStyle, setCustomStyle] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (description.trim()) {
-      onSubmit(description, panelCount);
+      const finalStyle = style === 'custom' ? customStyle : style;
+      onSubmit(description, panelCount, finalStyle);
     }
   };
 
@@ -46,7 +51,7 @@ const StoryForm: React.FC<StoryFormProps> = ({ onSubmit, isLoading }) => {
           />
         </div>
 
-        <div className="mb-8">
+        <div className="mb-6">
           <label htmlFor="panelCount" className="block text-sm font-medium text-gray-700 mb-2">
             Number of Panels (1-10)
           </label>
@@ -61,10 +66,50 @@ const StoryForm: React.FC<StoryFormProps> = ({ onSubmit, isLoading }) => {
           />
         </div>
 
+        <div className="mb-8">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Image Style
+          </label>
+          <RadioGroup 
+            value={style} 
+            onValueChange={setStyle}
+            className="grid grid-cols-2 gap-2 md:grid-cols-4"
+          >
+            <div className="flex items-center space-x-2 border rounded-md p-3 hover:bg-gray-50">
+              <RadioGroupItem value="manga" id="manga" />
+              <Label htmlFor="manga" className="cursor-pointer">Manga</Label>
+            </div>
+            <div className="flex items-center space-x-2 border rounded-md p-3 hover:bg-gray-50">
+              <RadioGroupItem value="comic book" id="comic" />
+              <Label htmlFor="comic" className="cursor-pointer">Comic Book</Label>
+            </div>
+            <div className="flex items-center space-x-2 border rounded-md p-3 hover:bg-gray-50">
+              <RadioGroupItem value="realistic" id="realistic" />
+              <Label htmlFor="realistic" className="cursor-pointer">Realistic</Label>
+            </div>
+            <div className="flex items-center space-x-2 border rounded-md p-3 hover:bg-gray-50">
+              <RadioGroupItem value="custom" id="custom" />
+              <Label htmlFor="custom" className="cursor-pointer">Custom</Label>
+            </div>
+          </RadioGroup>
+          
+          {style === 'custom' && (
+            <div className="mt-3">
+              <Input
+                placeholder="Enter custom style (e.g., watercolor, pixel art, etc.)"
+                value={customStyle}
+                onChange={(e) => setCustomStyle(e.target.value)}
+                className="w-full"
+                required={style === 'custom'}
+              />
+            </div>
+          )}
+        </div>
+
         <Button 
           type="submit" 
-          className="w-full bg-gradient-to-r from-panelize-dark-blue to-panelize-blue hover:opacity-90 transition-opacity"
-          disabled={isLoading || !description.trim()}
+          className="w-full bg-panelize-blue hover:opacity-90 transition-opacity"
+          disabled={isLoading || !description.trim() || (style === 'custom' && !customStyle.trim())}
         >
           {isLoading ? (
             <>
