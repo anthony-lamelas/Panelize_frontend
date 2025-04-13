@@ -10,3 +10,4 @@ pillow
 torch
 transformers
 requests
+flask_cors
