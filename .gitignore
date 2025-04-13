@@ -131,3 +131,5 @@ dmypy.json
 # IDE settings directories
 .vscode/*
 .idea/*
+
+commands.txt
