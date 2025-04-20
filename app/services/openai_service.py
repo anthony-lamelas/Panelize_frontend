@@ -10,7 +10,7 @@ openai.api_key = os.getenv("OPENAI_API_KEY")
 
 def generate_panels(story_description: str, num_panels: int):
 
-    # Part 1: GPT Breakdown
+    # GPT Breakdown
     system_msg = (
         "You are a prompt engineer for DALL·E. "
         "Take the user's story and split it into multiple panel prompts for a manga or comic, "
@@ -24,7 +24,7 @@ def generate_panels(story_description: str, num_panels: int):
 
     user_msg = f"Break this story into {num_panels} prompts:\n\n{story_description}"
 
-    gpt_response = openai.chat.completions.create(  # CHANGED FOR NEW OPENAI SYNTAX
+    gpt_response = openai.chat.completions.create(  
         model="gpt-4o",
         messages=[
             {"role": "system", "content": system_msg},
@@ -36,10 +36,10 @@ def generate_panels(story_description: str, num_panels: int):
     if not content:
         raise ValueError("GPT returned empty content.")
 
-    # Step 2: Parse GPT output
+    # Parse GPT output
     panel_prompts = parse_gpt_panels(content, num_panels)
 
-    # Step 3: DALLE generation
+    # DALLE generation
     results = []
     previous_caption = ""
     for i, panel_prompt in enumerate(panel_prompts):
@@ -103,12 +103,11 @@ def parse_gpt_panels(gpt_content: str, num_panels: int):
 def caption_image(image_bytes: bytes) -> str:
     device = "cuda" if torch.cuda.is_available() else "cpu"
 
-    # Load BLIP model & processor
+    # Load BLIP 
     processor = BlipProcessor.from_pretrained("Salesforce/blip-image-captioning-base")
     model = BlipForConditionalGeneration.from_pretrained("Salesforce/blip-image-captioning-base")
     model.to(device)
 
-    # Convert bytes to PIL Image
     img = Image.open(BytesIO(image_bytes)).convert("RGB")
 
     # Preprocess & generate
@@ -125,6 +124,6 @@ def caption_image(image_bytes: bytes) -> str:
             early_stopping=False
         )
 
-    # Decode the output tokens to text
+    # Decode the output tokens 
     caption = processor.decode(output_ids[0], skip_special_tokens=True)
     return caption
