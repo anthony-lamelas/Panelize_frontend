@@ -13,28 +13,32 @@ const Index = () => {
 
   const handleSubmit = async (description: string, panelCount: number, style: string) => {
     setIsLoading(true);
+    setPanels([]);
     
     try {
-      // In a real application, this would be an API call to your backend
-      // For demo purposes, we'll simulate a response after a delay
-      setTimeout(() => {
-        // Mock response data - in a real app, the description would come from the backend
-        // The backend would process the user's description using GPT to create panel-specific descriptions
-        const mockPanels: Panel[] = Array.from({ length: panelCount }, (_, i) => ({
-          id: `panel-${i}`,
-          imageBase64: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjRTVERUZGIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIyNCIgZmlsbD0iIzZFNTlBNSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZG9taW5hbnQtYmFzZWxpbmU9Im1pZGRsZSI+UGFuZWwgJHtpKzF9PC90ZXh0Pjwvc3ZnPg==',
-          description: `Panel ${i+1} (${style}): This is where the backend-generated description for this specific panel would appear. It would be a part of the story broken down by GPT.`
-        }));
-        
-        setPanels(mockPanels);
-        setIsLoading(false);
-        
-        toast({
-          title: "Panels generated",
-          description: `Successfully created ${panelCount} panels in ${style} style for your story.`,
-        });
-      }, 2000);
+      const response = await fetch("/api/generate-panels", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          story_description: description,
+          num_panels: panelCount,
+          style: style
+        })
+      });
       
+      if (!response.ok) throw new Error("Request failed");
+      
+      const data = await response.json();
+      setPanels(data.panels);
+      setIsLoading(false);
+      
+      toast({
+        title: "Panels generated",
+        description: `Successfully created ${panelCount} panels in ${style} style.`,
+      });
+    
     } catch (error) {
       setIsLoading(false);
       toast({
@@ -43,8 +47,9 @@ const Index = () => {
         variant: "destructive",
       });
     }
-  };
-
+  }
+    
+    
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-panelize-soft-gray">
       <div className="container px-4 py-8 mx-auto max-w-6xl">

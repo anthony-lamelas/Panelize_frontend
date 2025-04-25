@@ -1,6 +1,7 @@
 
 export interface Panel {
-  id: string;
-  imageBase64: string;
-  description: string;
+  prompt: string;
+  image_url: string;
+  caption: string;
 }
+
