@@ -8,18 +8,18 @@ from PIL import Image
 
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
-def generate_panels(story_description: str, num_panels: int):
+def generate_panels(story_description: str, num_panels: int, theme: str):
 
     # GPT Breakdown
     system_msg = (
-        "You are a prompt engineer for DALL·E. "
-        "Take the user's story and split it into multiple panel prompts for a manga or comic, "
-        "each describing a distinct scene in detail, under 1000 characters each. Make sure to include 'In colored manga theme generate the following:'" \
-        "in the beggining of each prompt. "
-        "Return them as a numbered list, for example:\n"
-        "Panel 1: In colored manga theme generate the following: <prompt text>\n"
-        "Panel 2: In colored manga theme generate the following: <prompt text>\n"
-        "..."
+        f"You are a prompt engineer for DALL·E. "
+        f"Take the user's story and split it into multiple panel prompts, create the story in the theme provided. "
+        f"Each panel describes a distinct scene in detail, in under 1000 characters each. Make sure to include 'In colored {theme} theme generate the following:'" \
+        f"in the beggining of each prompt. "
+        f"Return them as a numbered list, for example:\n"
+        f"Panel 1: This is the theme {theme}. In color, generate the following: <prompt text>\n"
+        f"Panel 2: This is the theme {theme}. In color, generate the following: <prompt text>\n"
+        f"..."
             )
 
     user_msg = f"Break this story into {num_panels} prompts:\n\n{story_description}"

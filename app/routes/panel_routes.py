@@ -8,6 +8,7 @@ def generate_panels_route():
     data = request.get_json()
     story_description = data.get('story_description', "")
     num_panels = data.get('num_panels', 1)
+    theme = data.get('style', 'manga')
 
     # Validate inputs, if invalid return error
     if not story_description or num_panels < 1:
@@ -15,9 +16,10 @@ def generate_panels_route():
     
     try:
         # Call service function (openai_service.py) to generate panels
-        results = generate_panels(story_description, num_panels)
+        results = generate_panels(story_description, num_panels, theme)
         return jsonify({"panels": results}), 200
     
     except Exception as e:
+        print("Backend Error:", e)
         return jsonify({"error": str(e)}), 500
 
