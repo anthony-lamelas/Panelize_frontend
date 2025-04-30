@@ -11,3 +11,5 @@ torch
 transformers
 requests
 flask_cors
+torch
+torchvision
