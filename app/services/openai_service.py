@@ -104,7 +104,7 @@ def caption_image(image_bytes: bytes) -> str:
     device = "cuda" if torch.cuda.is_available() else "cpu"
 
     # Load BLIP 
-    processor = BlipProcessor.from_pretrained("Salesforce/blip-image-captioning-base")
+    processor = BlipProcessor.from_pretrained("Salesforce/blip-image-captioning-base", use_fast=True)
     model = BlipForConditionalGeneration.from_pretrained("Salesforce/blip-image-captioning-base")
     model.to(device)
 
