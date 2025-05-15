@@ -13,3 +13,5 @@ requests
 flask_cors
 torch
 torchvision
+dotenv
+torch
