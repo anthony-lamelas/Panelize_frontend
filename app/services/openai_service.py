@@ -5,32 +5,47 @@ from transformers import BlipProcessor, BlipForConditionalGeneration
 import torch
 from io import BytesIO
 from PIL import Image
+import re
 
-openai.api_key = os.getenv("OPENAI_API_KEY")
+
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+client = openai.OpenAI(api_key=OPENAI_API_KEY)
+
+def sanitize_theme(theme: str) -> str:
+    # Allow only letters, numbers, spaces, and dashes
+    return re.sub(r"[^a-zA-Z0-9\- ]", "", theme).strip() or "manga"
 
 def generate_panels(story_description: str, num_panels: int, theme: str):
+    them = sanitize_theme(theme)
 
     # GPT Breakdown
     system_msg = (
         f"You are a prompt engineer for DALL·E. "
         f"Take the user's story and split it into multiple panel prompts, create the story in the theme provided. "
-        f"Each panel describes a distinct scene in detail, in under 1000 characters each. Make sure to include 'In colored {theme} theme generate the following:'" \
+        f"Each panel describes a distinct scene in detail, in under 1000 characters each. Make sure to include 'In colored {them} theme generate the following:'" \
         f"in the beggining of each prompt. "
         f"Return them as a numbered list, for example:\n"
-        f"Panel 1: This is the theme {theme}. In color, generate the following: <prompt text>\n"
-        f"Panel 2: This is the theme {theme}. In color, generate the following: <prompt text>\n"
+        f"Panel 1: This is the theme {them}. In color, generate the following: <prompt text>\n"
+        f"Panel 2: This is the theme {them}. In color, generate the following: <prompt text>\n"
         f"..."
             )
 
     user_msg = f"Break this story into {num_panels} prompts:\n\n{story_description}"
 
-    gpt_response = openai.chat.completions.create(  
+    # print(f"[DEBUG] Theme received: '{them}' → sanitized: '{them}'")
+    # print(f"[DEBUG] Sending to GPT:\nSystem: {system_msg[:500]}...\nUser: {user_msg[:500]}...\n")
+
+
+    gpt_response = client.chat.completions.create(  
         model="gpt-4o",
         messages=[
             {"role": "system", "content": system_msg},
             {"role": "user", "content": user_msg},
         ]
     )
+
+    # print("[DEBUG] GPT response received.")
+    # print(f"[DEBUG] GPT response: {gpt_response}")
 
     content = gpt_response.choices[0].message.content
     if not content:
@@ -53,13 +68,16 @@ def generate_panels(story_description: str, num_panels: int, theme: str):
                 "Generate this next image based on the following description "
                 f"of the previous image as you are telling a story: {previous_caption}. {panel_prompt}"
             )
-    
-        image_response = openai.images.generate(  # CHANGED FOR NEW OPENAI SYNTAX
+
+        print(f"[DEBUG] Generating image for prompt: '{used_prompt}'")
+        image_response = client.images.generate(  # CHANGED FOR NEW OPENAI SYNTAX
             prompt=used_prompt,
             n=1,
             size="1024x1024",
             model="dall-e-3"  
         )
+
+        print(f"[DEBUG] Image response: {image_response}")
 
         if not image_response.data:  # CHANGED FOR NEW OPENAI SYNTAX
             results.append({"prompt": used_prompt, "image_url": None, "caption": None})
