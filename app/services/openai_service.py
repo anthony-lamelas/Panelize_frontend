@@ -1,12 +1,22 @@
 import openai       
 import os
 import requests
-from transformers import BlipProcessor, BlipForConditionalGeneration
+from transformers.models.blip import BlipProcessor, BlipForConditionalGeneration
 import torch
 from io import BytesIO
 from PIL import Image
 import re
 
+
+device = "cuda" if torch.cuda.is_available() else "cpu"
+
+# Load BLIP 
+processor = BlipProcessor.from_pretrained("Salesforce/blip-image-captioning-base", use_fast=True)
+
+model = BlipForConditionalGeneration.from_pretrained(
+        "Salesforce/blip-image-captioning-base",
+        torch_dtype=torch.float32).to(device) # type: ignore
+model.eval() # evalutaion mode since we are not training
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 client = openai.OpenAI(api_key=OPENAI_API_KEY)
@@ -18,7 +28,12 @@ def sanitize_theme(theme: str) -> str:
 def generate_panels(story_description: str, num_panels: int, theme: str):
     them = sanitize_theme(theme)
 
-    # GPT Breakdown
+    # Debug: Print incoming parameters
+    print("[DEBUG] generate_panels called with:")
+    print(f"  story_description: {story_description}")
+    print(f"  num_panels: {num_panels}")
+    print(f"  theme: {theme}")
+    
     system_msg = (
         f"You are a prompt engineer for DALL·E. "
         f"Take the user's story and split it into multiple panel prompts, create the story in the theme provided. "
@@ -32,20 +47,23 @@ def generate_panels(story_description: str, num_panels: int, theme: str):
 
     user_msg = f"Break this story into {num_panels} prompts:\n\n{story_description}"
 
-    # print(f"[DEBUG] Theme received: '{them}' → sanitized: '{them}'")
-    # print(f"[DEBUG] Sending to GPT:\nSystem: {system_msg[:500]}...\nUser: {user_msg[:500]}...\n")
+    print("[DEBUG] system_msg:", system_msg)
+    print("[DEBUG] user_msg:", user_msg)
 
-
-    gpt_response = client.chat.completions.create(  
-        model="gpt-4o",
-        messages=[
-            {"role": "system", "content": system_msg},
-            {"role": "user", "content": user_msg},
-        ]
-    )
-
-    # print("[DEBUG] GPT response received.")
-    # print(f"[DEBUG] GPT response: {gpt_response}")
+    try:
+        gpt_response = client.chat.completions.create(  
+            model="gpt-4o",
+            messages=[
+                {"role": "system", "content": system_msg},
+                {"role": "user", "content": user_msg},
+            ]
+        )
+    except Exception as e:
+        import traceback
+        tb = traceback.format_exc()
+        print("[ERROR] OpenAI API Exception:", e)
+        print(tb)
+        raise
 
     content = gpt_response.choices[0].message.content
     if not content:
@@ -86,9 +104,15 @@ def generate_panels(story_description: str, num_panels: int, theme: str):
         image_url = image_response.data[0].url  # CHANGED FOR NEW OPENAI SYNTAX
 
         # Caption using BLIP
-        image_bytes = requests.get(image_url).content
-        caption = caption_image(image_bytes)
+        if image_url is not None:
+            image_bytes = requests.get(image_url).content
+            caption = caption_image(image_bytes)
+        else:
+            caption = None
         previous_caption = caption
+
+        # caption = "Captioning disabled test"
+        print(f"[DEBUG] Caption: {caption}")
 
         results.append({"prompt": used_prompt, "image_url": image_url, "caption": caption})
 
@@ -119,20 +143,12 @@ def parse_gpt_panels(gpt_content: str, num_panels: int):
     return panel_prompts[:num_panels]
 
 def caption_image(image_bytes: bytes) -> str:
-    device = "cuda" if torch.cuda.is_available() else "cpu"
-
-    # Load BLIP 
-    processor = BlipProcessor.from_pretrained("Salesforce/blip-image-captioning-base", use_fast=True)
-
-    model = BlipForConditionalGeneration.from_pretrained(
-        "Salesforce/blip-image-captioning-base",
-        torch_dtype=torch.float32).to(device)
-    model.eval() # evalutaion mode since we are not making predictions
-
     img = Image.open(BytesIO(image_bytes)).convert("RGB")
 
     # Preprocess & generate
-    inputs = processor(img, return_tensors="pt").to(device)
+    inputs = processor(img, return_tensors="pt") # type: ignore
+    inputs = {k: v.to(device) for k, v in inputs.items()}  # ✅ Move tensors to device
+
     with torch.no_grad():
         output_ids = model.generate(
             **inputs,
@@ -146,5 +162,5 @@ def caption_image(image_bytes: bytes) -> str:
         )
 
     # Decode the output tokens 
-    caption = processor.decode(output_ids[0], skip_special_tokens=True)
+    caption = processor.decode(output_ids[0], skip_special_tokens=True) # type: ignore
     return caption
