@@ -103,11 +103,14 @@ def generate_panels(story_description: str, num_panels: int, theme: str):
 
         image_url = image_response.data[0].url  # CHANGED FOR NEW OPENAI SYNTAX
 
+        print(f"[DEBUG] RIGHT BEFORE CAPTIONING")
         # Caption using BLIP
         if image_url is not None:
+            print(f"[DEBUG] Image URL FOUND")
             image_bytes = requests.get(image_url).content
             caption = caption_image(image_bytes)
         else:
+            print("[DEBUG] No image URL returned.")
             caption = None
         previous_caption = caption
 
