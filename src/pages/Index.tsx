@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card } from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
@@ -11,12 +10,14 @@ const Index = () => {
   const [panels, setPanels] = useState<Panel[]>([]);
   const { toast } = useToast();
 
+  const apiUrl = import.meta.env.VITE_API_URL || "";
+
   const handleSubmit = async (description: string, panelCount: number, style: string) => {
     setIsLoading(true);
     setPanels([]);
     
     try {
-      const response = await fetch("/api/generate-panels", {
+      const response = await fetch(`${apiUrl}/api/generate-panels`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
